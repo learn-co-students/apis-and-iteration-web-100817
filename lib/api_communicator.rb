@@ -3,13 +3,13 @@ require 'json'
 require 'pry'
 
 
-
+#Fabiano Commit
 
 def get_character_movies_from_api(character)
   #make the web request
   character_hash = url_hasher('http://swapi.co/api/people')
   characters = character_getter(character_hash)
-  until character_hash["next"] == nil 
+  until character_hash["next"] == nil
     character_hash = url_hasher(character_hash["next"])
     characters.merge!(character_getter(character_hash))
   end
@@ -37,7 +37,7 @@ def parse_character_movies(characters)
     characters[character] = film_list.collect {|film| films[film]}
   end
 
-  
+
 end
 
 def show_character_movies(character)
