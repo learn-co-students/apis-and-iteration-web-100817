@@ -2,24 +2,36 @@ require 'rest-client'
 require 'json'
 require 'pry'
 
-def get_data_from_api_for_people
-  raw_data = RestClient.get('http://www.swapi.co/api/people/')
+def get_data_from_api(type)
+  raw_data = RestClient.get("http://www.swapi.co/api/#{type}/")
   data = JSON.parse(raw_data)
-end
-
-def get_data_from_api_for_films
-  raw_data = RestClient.get('http://www.swapi.co/api/films/')
-  data = JSON.parse(raw_data)
+  ultimate_array = Array.new
+  ultimate_array << data
+  while ultimate_array[-1]["next"] != nil
+    raw_data = RestClient.get("http://www.swapi.co/api/#{type}/?page=#{ultimate_array.length+1}")
+    data = JSON.parse(raw_data)
+    ultimate_array << data
+  end
+  ultimate_array
 end
 
 def get_character_movies(character)
   #make the web request
-  data = get_data_from_api_for_people
-  character_info = data["results"].find {|char| char["name"].downcase == character}
-  character_films = character_info["films"]
-  character_films.collect do |film|
-    film_raw_data = RestClient.get(film)
-    film_data = JSON.parse(film_raw_data)
+  data = get_data_from_api("people")
+  character_info = nil
+  data.each do |page|
+    if page["results"].find {|char| char["name"].downcase == character}
+      character_info = page["results"].find {|char| char["name"].downcase == character}
+    end
+  end
+  if character_info
+    character_films = character_info["films"]
+    character_films.collect do |film|
+      film_raw_data = RestClient.get(film)
+      film_data = JSON.parse(film_raw_data)
+    end
+  else
+    puts "Character not found!"
   end
   # iterate over the character hash to find the collection of `films` for the given
   #   `character`
@@ -33,8 +45,18 @@ def get_character_movies(character)
 end
 
 def get_movie_data(movie)
-  data = get_data_from_api_for_films
-  movie_info = data["results"].find {|mov| mov["title"].downcase == movie}
+  data = get_data_from_api("films")
+  movie_info = nil
+  data.each do |page|
+    if page["results"].find {|mov| mov["title"].downcase == movie}
+      movie_info = page["results"].find {|mov| mov["title"].downcase == movie}
+    end
+  end
+  if movie_info
+    movie_info
+  else
+    puts "Movie not found!"
+  end
 end
 
 def parse_character_movies(films_hash)
@@ -53,9 +75,10 @@ def parse_movie_data(movie_hash)
 end
 
 def show_character_movies(character)
-  films_hash = get_character_movies(character)
-  puts "\nDisplaying movies that contain #{character}\n\n"
-  parse_character_movies(films_hash)
+  if films_hash = get_character_movies(character)
+    puts "\nDisplaying movies that contain #{character}\n\n"
+    parse_character_movies(films_hash)
+  end
 end
 
 def show_movie_details(movie)
