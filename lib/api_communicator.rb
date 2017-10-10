@@ -3,7 +3,6 @@ require 'json'
 require 'pry'
 
 
-#Fabiano Commit
 
 def get_character_movies_from_api(character)
   #make the web request
