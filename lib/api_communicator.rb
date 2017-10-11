@@ -4,30 +4,18 @@ require 'pry'
 
 
 def get_specific_character(character)
-  # n=1
-  # arr =[]
-  # while n < 10
-  #   arr.push(RestClient.get("http://www.swapi.co/api/people/?page=#{n}"))
-  #   n += 1
-  # end
-  #
-  # character_hash = []
-  #   arr.each do |x|
-  #     character_hash.push(JSON.parse(x))
-  #   end
-  #   new_hash = character_hash.flatten
-  #   better_hash = new_hash.map { |x| "'#{x}'"}.join(' ')
-  #
-  #
-  # all_characters = 8.times do
-  #   RestClient.get("http://www.swapi.co/api/people/?page=#{n}")
-  #   n += 1
-  all_characters = RestClient.get('http://www.swapi.co/api/people/')
-  character_hash = JSON.parse(all_characters)
+  n=1
+  character_array = []
+  9.times do
+    all_characters = RestClient.get("http://www.swapi.co/api/people/?page=#{n}")
+    character_hash = JSON.parse(all_characters)
+    character_array << character_hash["results"] #every page is different
+    n += 1
+  end
+  character_array = character_array.flatten
 
-  character_hash["results"].find do |character_info|
+  character_array.find do |character_info|
     character_info["name"].downcase == character
-
   end
 end
 
